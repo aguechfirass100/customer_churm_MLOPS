@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Churn Prediction</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                background-color: #f4f7fc;
+                color: #333;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+            }
+            h1 {
+                text-align: center;
+                color: #4CAF50;
+            }
+            .container {
+                background-color: #fff;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                width: 500px;
+                box-sizing: border-box;
+            }
+            label {
+                font-size: 16px;
+                margin-bottom: 8px;
+                display: block;
+            }
+            textarea {
+                width: 100%;
+                padding: 10px;
+                font-size: 14px;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                resize: vertical;
+                margin-bottom: 20px;
+            }
+            button {
+                background-color: #4CAF50;
+                color: white;
+                padding: 10px 20px;
+                font-size: 16px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                transition: background-color 0.3s ease;
+                width: 100%;
+            }
+            button:hover {
+                background-color: #45a049;
+            }
+            .result {
+                text-align: center;
+                margin-top: 20px;
+                font-size: 20px;
+            }
+            .error {
+                color: red;
+                font-size: 18px;
+                text-align: center;
+                margin-top: 20px;
+            }
+            .valid {
+                color: green;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Churn Prediction</h1>
+
+            <form id="predictForm">
+                <label for="featuresInput">Features (Input as JSON):</label><br>
+                <textarea id="featuresInput" rows="6" placeholder='{"features": [[-0.23082038, 0.91509065, -0.94449979, -0.70174202, 0.58817274, 0.80225696, -1.55337352, 0.97725852, 0.42739449]]}' required></textarea><br>
+
+                <button type="submit">Predict</button>
+            </form>
+
+            <div class="result">
+                <h2>Prediction Result:</h2>
+                <span id="predictionResult"></span>
+            </div>
+
+            <div class="error" id="errorMessage"></div>
+        </div>
+
+        <script>
+            document.getElementById('predictForm').addEventListener('submit', function(event) {
+                event.preventDefault();
+                
+                // Get the features input from the textarea
+                let featuresInput = document.getElementById('featuresInput').value;
+                let errorMessage = document.getElementById('errorMessage');
+                let result = document.getElementById('predictionResult');
+                result.innerText = '';
+                errorMessage.innerText = '';
+
+                // Try to parse the input as JSON
+                try {
+                    let parsedData = JSON.parse(featuresInput);
+                    
+                    // Check if the JSON structure is correct
+                    if (parsedData.features && Array.isArray(parsedData.features)) {
+                        // Send the data to the FastAPI endpoint
+                        fetch('http://127.0.0.1:8000/predict', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(parsedData)
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            // Display prediction result
+                            result.innerText = data.prediction === 1 ? "Exited" : "Not Exited";
+                            result.classList.add("valid");
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            errorMessage.innerText = "Error during prediction.";
+                        });
+                    } else {
+                        errorMessage.innerText = "Invalid JSON format. Make sure the 'features' array is correct.";
+                    }
+                } catch (error) {
+                    errorMessage.innerText = "Invalid JSON format.";
+                }
+            });
+        </script>
+    </body>
+</html>
