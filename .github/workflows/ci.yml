@@ -31,3 +31,50 @@ jobs:
       - name: Run tests
         run: |
           PYTHONPATH=$(pwd) pytest tests/
+
+  notify:
+    runs-on: ubuntu-latest
+    needs: test
+    if: always()  # Always send an email, even if tests fail
+    steps:
+      - name: Send success email notification
+        if: success()  # Only send an email if the tests pass
+        run: |
+          curl -X POST "https://api.mailjet.com/v3.1/send" \
+          -H "Content-Type: application/json" \
+          -u "${{ secrets.MAILJET_API_KEY }}:${{ secrets.MAILJET_API_SECRET }}" \
+          -d '{
+                "Messages": [{
+                  "From": {
+                    "Email": "${{ secrets.EMAIL_SENDER }}",
+                    "Name": "GitHub Actions"
+                  },
+                  "To": [{
+                    "Email": "${{ secrets.EMAIL_RECIPIENT2 }}",
+                    "Name": "Firas Aguech"
+                  }],
+                  "Subject": "GitHub Actions Workflow Status: Success",
+                  "TextPart": "The GitHub Actions workflow has successfully completed with all tests passing."
+                }]
+              }'
+
+      - name: Send failure email notification
+        if: failure()  # Only send an email if the tests failed
+        run: |
+          curl -X POST "https://api.mailjet.com/v3.1/send" \
+          -H "Content-Type: application/json" \
+          -u "${{ secrets.MAILJET_API_KEY }}:${{ secrets.MAILJET_API_SECRET }}" \
+          -d '{
+                "Messages": [{
+                  "From": {
+                    "Email": "${{ secrets.EMAIL_SENDER }}",
+                    "Name": "GitHub Actions"
+                  },
+                  "To": [{
+                    "Email": "${{ secrets.EMAIL_RECIPIENT2 }}",
+                    "Name": "Firas Aguech"
+                  }],
+                  "Subject": "GitHub Actions Workflow Status: Failure",
+                  "TextPart": "The GitHub Actions workflow has failed. Please check the logs for details."
+                }]
+              }'
