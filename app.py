@@ -75,7 +75,7 @@ async def retrain(request: RetrainRequest):
 
         accuracy, precision, recall, f1 = evaluate_model(model, x_test, y_test)
 
-        print("Saving the retrained model")
+        print("Saving the  retrained model")
         save_model(model)
 
         # Save retraining metrics to MongoDB
