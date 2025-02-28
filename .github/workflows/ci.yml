@@ -14,7 +14,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set up Docker containers
+      - name: Set up Docker containers (only required for initial Docker setup, but not needed for Mongo)
         run: |
           sudo apt-get update
           sudo apt-get install -y docker.io
@@ -58,7 +58,7 @@ jobs:
 
   build-and-push:
     runs-on: ubuntu-latest
-    # needs: test  # Only run if tests pass
+    needs: test  # Ensure this job runs only if the test job is successful
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
