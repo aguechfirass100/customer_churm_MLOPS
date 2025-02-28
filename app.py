@@ -49,11 +49,9 @@ async def predict(request: PredictionRequest):
     try:
         prediction = model.predict(features)
 
-        # Save prediction to MongoDB
         prediction_data = {"prediction": int(prediction[0])}
         result = await predictions_collection.insert_one(prediction_data)
 
-        # Return the inserted ID
         return {"prediction": int(prediction[0]), "prediction_id": str(result.inserted_id)}
     except Exception as e:
         raise HTTPException(status_code=400, detail="Prediction failed")
@@ -78,7 +76,6 @@ async def retrain(request: RetrainRequest):
         print("Saving the  retrained model")
         save_model(model)
 
-        # Save retraining metrics to MongoDB
         retraining_metrics = {
             "accuracy": accuracy,
             "precision": precision,
@@ -92,7 +89,6 @@ async def retrain(request: RetrainRequest):
                 "precision": precision,
                 "recall": recall,
                 "f1": f1,
-                # Return the inserted ID
                 "retraining_id": str(result.inserted_id)}
     except Exception as e:
         raise HTTPException(

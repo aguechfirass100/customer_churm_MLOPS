@@ -137,19 +137,16 @@
     </div>
 
     <script>
-        // Open the modal
         function openModal() {
             document.getElementById('retrain-modal').style.display = 'flex';
         }
 
-        // Close the modal
         function closeModal() {
             document.getElementById('retrain-modal').style.display = 'none';
         }
 
-        // Handle form submission
         document.getElementById('retrain-form').addEventListener('submit', async function(e) {
-            e.preventDefault(); // Prevent page refresh
+            e.preventDefault();
 
             const n_estimators = document.getElementById('n_estimators').value;
             const max_depth = document.getElementById('max_depth').value;
@@ -202,7 +199,6 @@
             }
         });
 
-        // Close modal when clicking outside of it
         window.addEventListener('click', function(event) {
             const modal = document.getElementById('retrain-modal');
             if (event.target === modal) {

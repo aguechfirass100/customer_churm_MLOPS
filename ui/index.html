@@ -95,20 +95,16 @@
             document.getElementById('predictForm').addEventListener('submit', function(event) {
                 event.preventDefault();
                 
-                // Get the features input from the textarea
                 let featuresInput = document.getElementById('featuresInput').value;
                 let errorMessage = document.getElementById('errorMessage');
                 let result = document.getElementById('predictionResult');
                 result.innerText = '';
                 errorMessage.innerText = '';
 
-                // Try to parse the input as JSON
                 try {
                     let parsedData = JSON.parse(featuresInput);
                     
-                    // Check if the JSON structure is correct
                     if (parsedData.features && Array.isArray(parsedData.features)) {
-                        // Send the data to the FastAPI endpoint
                         fetch('http://127.0.0.1:8000/predict', {
                             method: 'POST',
                             headers: {
@@ -118,7 +114,6 @@
                         })
                         .then(response => response.json())
                         .then(data => {
-                            // Display prediction result
                             result.innerText = data.prediction === 1 ? "Exited" : "Not Exited";
                             result.classList.add("valid");
                         })
