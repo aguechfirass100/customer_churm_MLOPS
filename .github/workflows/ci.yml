@@ -7,18 +7,6 @@ on:
     branches: [main]
 
 jobs:
-
-  setup-docker:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Set up Docker (only required if Docker is not set up on the runner)
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y docker.io
-          
   test:
     runs-on: ubuntu-latest
     
