@@ -16,4 +16,4 @@ mlruns/
 .ipynb_checkpoints/
 
 # Environment files
-.env
+# .env
