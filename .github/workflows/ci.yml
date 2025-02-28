@@ -33,6 +33,10 @@ jobs:
         run: |
           docker-compose up --build -d
 
+      - name: Check FastAPI logs
+        run: |
+          docker-compose logs fastapi
+
       - name: Wait for MongoDB to be ready
         run: |
           docker-compose exec -T mongodb mongo --eval 'db.runCommand("ping").ok'

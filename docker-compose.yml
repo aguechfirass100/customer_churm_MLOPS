@@ -13,10 +13,11 @@ services:
       mongodb:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 10s
-      timeout: 5s
+      test: ["CMD", "curl", "-s", "-f", "http://localhost:8000/health"]
+      interval: 15s # Increased the interval
+      timeout: 10s # Increased timeout
       retries: 5
+      start_period: 10s # Added start period to give FastAPI more time to start
     networks:
       - app_network
 
@@ -29,9 +30,10 @@ services:
       - mongodb_data:/data/db
     healthcheck:
       test: ["CMD", "mongo", "--eval", 'db.runCommand("ping").ok']
-      interval: 10s
-      timeout: 5s
+      interval: 15s # Increased interval
+      timeout: 10s # Increased timeout
       retries: 5
+      start_period: 10s # Added start period for MongoDB
     networks:
       - app_network
 
