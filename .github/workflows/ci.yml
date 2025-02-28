@@ -29,13 +29,17 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y docker-compose
 
-      - name: Start services with Docker Compose
+      - name: Build and start services with Docker Compose
         run: |
-          docker-compose up -d
+          docker-compose up --build -d
 
       - name: Wait for MongoDB to be ready
         run: |
           docker-compose exec -T mongodb mongo --eval 'db.runCommand("ping").ok'
+
+      - name: Wait for FastAPI to be ready
+        run: |
+          docker-compose exec -T fastapi curl -f http://localhost:8000/health
 
       - name: Run tests
         run: |

@@ -99,6 +99,11 @@ async def retrain(request: RetrainRequest):
             status_code=400, detail=f"Retraining failed: {str(e)}")
 
 
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}
+
+
 # from fastapi import FastAPI, HTTPException
 # from fastapi.middleware.cors import CORSMiddleware
 # from pydantic import BaseModel
