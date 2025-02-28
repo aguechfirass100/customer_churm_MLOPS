@@ -12,7 +12,7 @@ if mlflow.get_experiment_by_name(experiment_name) is None:
 mlflow.set_experiment(experiment_name)
 
 
-def train_model(x_train, y_train, n_estimators=100, max_depth=3, learning_rate=0.1):
+def train_model(x_train, y_train, n_estimators=100, max_depth=3, learning_rate=0.1, min_samples_split=2):
     """Trains the XGBoost model and logs parameters with MLflow."""
     with mlflow.start_run():
         mlflow.log_param("n_estimators", n_estimators)
@@ -25,7 +25,8 @@ def train_model(x_train, y_train, n_estimators=100, max_depth=3, learning_rate=0
             learning_rate=learning_rate,
             random_state=1,
             use_label_encoder=False,
-            eval_metric='logloss'
+            eval_metric='logloss',
+            min_samples_split=min_samples_split
         )
         model.fit(x_train, y_train)
         print("X_train shape", x_train.shape)

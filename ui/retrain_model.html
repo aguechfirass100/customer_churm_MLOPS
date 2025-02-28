@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retrain Model</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7fc;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            text-align: center;
+        }
+
+        .retrain-button {
+            padding: 12px 24px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .retrain-button:hover {
+            background-color: #45a049;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-content h2 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        .modal-content label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .modal-content input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .modal-content button {
+            width: 100%;
+            padding: 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .modal-content button:hover {
+            background-color: #45a049;
+        }
+
+        .response {
+            margin-top: 20px;
+            padding: 16px;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .response.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .response.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <button class="retrain-button" onclick="openModal()">Retrain Model</button>
+    </div>
+
+    <!-- Modal -->
+    <div id="retrain-modal" class="modal">
+        <div class="modal-content">
+            <h2>Retrain Model</h2>
+            <form id="retrain-form">
+                <label for="n_estimators">Number of Estimators:</label>
+                <input type="number" id="n_estimators" name="n_estimators" value="100" required>
+
+                <label for="max_depth">Max Depth:</label>
+                <input type="number" id="max_depth" name="max_depth" value="15" required>
+
+                <label for="min_samples_split">Min Samples Split:</label>
+                <input type="number" id="min_samples_split" name="min_samples_split" value="3" required>
+
+                <button type="submit">Retrain</button>
+            </form>
+
+            <div id="response" class="response"></div>
+        </div>
+    </div>
+
+    <script>
+        // Open the modal
+        function openModal() {
+            document.getElementById('retrain-modal').style.display = 'flex';
+        }
+
+        // Close the modal
+        function closeModal() {
+            document.getElementById('retrain-modal').style.display = 'none';
+        }
+
+        // Handle form submission
+        document.getElementById('retrain-form').addEventListener('submit', async function(e) {
+            e.preventDefault(); // Prevent page refresh
+
+            const n_estimators = document.getElementById('n_estimators').value;
+            const max_depth = document.getElementById('max_depth').value;
+            const min_samples_split = document.getElementById('min_samples_split').value;
+
+            const retrainRequest = {
+                n_estimators: parseInt(n_estimators),
+                max_depth: parseInt(max_depth),
+                min_samples_split: parseInt(min_samples_split),
+            };
+            console.log("Retrain Request: ", retrainRequest);
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/retrain', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(retrainRequest),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Error: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                console.log("Response Data: ", data);
+
+                if (data.message) {
+                    document.getElementById('response').innerHTML = `
+                        <div class="success">
+                            <h2>Model Retrained Successfully!</h2>
+                            <p>Accuracy: ${data.accuracy}</p>
+                            <p>Precision: ${data.precision}</p>
+                            <p>Recall: ${data.recall}</p>
+                            <p>F1: ${data.f1}</p>
+                        </div>
+                    `;
+                } else {
+                    throw new Error("Unexpected response format");
+                }
+            } catch (error) {
+                document.getElementById('response').innerHTML = `
+                    <div class="error">
+                        <h2>Error Retraining Model</h2>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+                console.error(error);
+            }
+        });
+
+        // Close modal when clicking outside of it
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('retrain-modal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        });
+    </script>
+
+</body>
+</html>

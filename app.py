@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import joblib
+import mlflow
 import numpy as np
 
 from model_pipeline import evaluate_model, prepare_data, save_model, train_model
@@ -18,13 +19,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 class PredictionRequest(BaseModel):
     features: list
-    
+
+
 class RetrainRequest(BaseModel):
     n_estimators: int
     max_depth: int
     min_samples_split: int
+
 
 @app.post("/predict")
 def predict(request: PredictionRequest):
@@ -39,22 +43,29 @@ def predict(request: PredictionRequest):
 
 @app.post("/retrain")
 def retrain(request: RetrainRequest):
+
+    if mlflow.active_run():
+        mlflow.end_run()
+
     try:
+        print("Retraining the model")
         x_train, x_test, y_train, y_test = prepare_data()
 
-        model = train_model(x_train, y_train, 
-                            n_estimators=request.n_estimators, 
-                            max_depth=request.max_depth, 
+        model = train_model(x_train, y_train,
+                            n_estimators=request.n_estimators,
+                            max_depth=request.max_depth,
                             min_samples_split=request.min_samples_split)
 
         accuracy, precision, recall, f1 = evaluate_model(model, x_test, y_test)
 
+        print("Saving the retrained model")
         save_model(model)
 
-        return {"message": "Model re-trained successfully", 
-                "accuracy": accuracy, 
-                "precision": precision, 
-                "recall": recall, 
+        return {"message": "Model re-trained successfully",
+                "accuracy": accuracy,
+                "precision": precision,
+                "recall": recall,
                 "f1": f1}
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Retraining failed: {str(e)}")
+        raise HTTPException(
+            status_code=400, detail=f"Retraining failed: {str(e)}")
