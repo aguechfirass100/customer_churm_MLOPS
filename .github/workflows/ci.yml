@@ -14,13 +14,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set up Docker containers (only required for initial Docker setup, but not needed for Mongo)
+      - name: Set up Docker (only required if Docker is not set up on the runner)
         run: |
           sudo apt-get update
           sudo apt-get install -y docker.io
-          chmod +x ./docker-setup.sh
-          ./docker-setup.sh
-
+          
   test:
     runs-on: ubuntu-latest
     
@@ -50,10 +48,12 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y dockerize
 
+      - name: Wait for MongoDB to be ready
+        run: |
+          dockerize -wait tcp://localhost:27017 -timeout 1m
+
       - name: Run tests
         run: |
-          # Wait for MongoDB to be ready
-          dockerize -wait tcp://localhost:27017 -timeout 1m
           PYTHONPATH=$(pwd) pytest tests/
 
   build-and-push:
