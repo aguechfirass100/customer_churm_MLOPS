@@ -4,12 +4,25 @@ import joblib
 from xgboost import XGBClassifier
 import os
 
-experiment_name = "Churn_Model_Experiment_XGBoost"
+# experiment_name = "Churn_Model_Experiment_XGBoost"
+
+# if mlflow.get_experiment_by_name(experiment_name) is None:
+#     mlflow.create_experiment(experiment_name)
+
+# mlflow.set_experiment(experiment_name)
+
+# Set the tracking URI explicitly
+mlflow.set_tracking_uri("http://127.0.0.1:5000")
+
+experiment_name = "Churn_Model_Experiment_XGBoostV2"
 
 if mlflow.get_experiment_by_name(experiment_name) is None:
     mlflow.create_experiment(experiment_name)
 
 mlflow.set_experiment(experiment_name)
+
+print(f"Tracking URI: {mlflow.get_tracking_uri()}")
+print(f"Experiment '{experiment_name}' is set up.")
 
 
 def train_model(x_train, y_train, n_estimators=100, max_depth=3, learning_rate=0.1, min_samples_split=2):

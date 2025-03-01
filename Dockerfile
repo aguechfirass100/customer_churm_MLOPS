@@ -1,10 +1,16 @@
 FROM python:3.11-slim
 
+ENV PIP_DEFAULT_TIMEOUT=100 \
+    PIP_NO_CACHE_DIR=0 \
+    PIP_CACHE_DIR=/root/.cache/pip
+
 WORKDIR /app
 
-COPY . /app
+COPY requirements.txt /app/
 
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --retries 5 --cache-dir $PIP_CACHE_DIR -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+
+COPY . /app
 
 EXPOSE 8000
 

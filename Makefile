@@ -38,7 +38,7 @@ run-api:
 	$(VENV_NAME)/bin/uvicorn app:app --reload
 
 run-mlflow:
-	$(VENV_NAME)/bin/mlflow ui --host 0.0.0.0 --port 5000 &
+	$(VENV_NAME)/bin/mlflow ui --host 0.0.0.0 --port 5000 --backend-store-uri sqlite:///mlflow.db --default-artifact-root ./mlruns
 
 build-docker:
 	docker build -t firas-aguech-4ds5-mlops .

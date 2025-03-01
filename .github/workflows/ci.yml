@@ -28,19 +28,14 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y docker-compose
-          docker-compose --version
 
       - name: Build and start services with Docker Compose
         run: |
           docker-compose up --build -d
 
-      - name: Check Docker Compose logs
+      - name: Check FastAPI logs
         run: |
-          docker-compose logs
-
-      - name: List running containers
-        run: |
-          docker ps -a
+          docker-compose logs fastapi
 
       - name: Wait for MongoDB to be ready
         run: |
