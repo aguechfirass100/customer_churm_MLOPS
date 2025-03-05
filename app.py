@@ -166,3 +166,9 @@ async def retrain(request: RetrainRequest):
 def health_check():
     print("Health check endpoint called.")
     return {"status": "healthy"}
+
+
+@app.get("/healthy")
+def health_check():
+    print("Health check endpoint called.")
+    return {"status": "healthy"}
