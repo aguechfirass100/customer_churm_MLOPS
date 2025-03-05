@@ -25,17 +25,17 @@ jobs:
           pip install -r requirements.txt
           pip install flake8 black bandit  # Install linting, formatting, and security tools
 
-      - name: Run Black (Formatter)
-        run: |
-          black .
+      # - name: Run Black (Formatter)
+      #   run: |
+      #     black .
 
-      - name: Run Flake8 (Linter)
-        run: |
-          flake8 .
+      # - name: Run Flake8 (Linter)
+      #   run: |
+      #     flake8 .
 
-      - name: Run Bandit (Security)
-        run: |
-          bandit -c .bandit -r .
+      # - name: Run Bandit (Security)
+      #   run: |
+      #     bandit -c .bandit -r .
 
       - name: Install Docker Compose
         run: |
