@@ -35,7 +35,7 @@ jobs:
 
       - name: Run Bandit (Security)
         run: |
-          bandit -r .
+          bandit -c .bandit -r .
 
       - name: Install Docker Compose
         run: |
