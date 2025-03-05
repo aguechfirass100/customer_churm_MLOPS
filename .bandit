@@ -1,5 +1,4 @@
 [bandit]
-# Skip assert checks in test files
-skips: B101
-targets: ./  # Scan the entire project
-exclude: ./tests/
+skips = B101
+targets = ./
+exclude = ./tests/
