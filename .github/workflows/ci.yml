@@ -23,6 +23,19 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          pip install flake8 black bandit  # Install linting, formatting, and security tools
+
+      - name: Run Black (Formatter)
+        run: |
+          black --check .
+
+      - name: Run Flake8 (Linter)
+        run: |
+          flake8 .
+
+      - name: Run Bandit (Security)
+        run: |
+          bandit -r .
 
       - name: Install Docker Compose
         run: |
@@ -102,7 +115,7 @@ jobs:
                     "Name": "Firas Aguech"
                   }],
                   "Subject": "GitHub Actions Workflow Status: Success",
-                  "TextPart": "The GitHub Actions workflow has completed successfully!\n\nAll tests have passed, and the Docker image was built and pushed to Docker Hub without issues.\n\nWorkflow Summary:\n- Tests: Passed\n- Docker Image: Successfully Built and Pushed\n- Repository: ${{ github.repository }}\n- Commit: ${{ github.sha }}\n\nThank you for using our CI/CD pipeline."
+                  "TextPart": "The GitHub Actions workflow has completed successfully!\n\nDetails:\n- Repository: ${{ github.repository }}\n- Commit: ${{ github.sha }}\n- Tests: Passed\n- Linting: Passed\n- Formatting: Passed\n- Security: Passed\n- Docker Build: Successfully Built and Pushed\n\nThank you for using our CI/CD pipeline."
                 }]
               }'
 
@@ -123,6 +136,6 @@ jobs:
                     "Name": "Firas Aguech"
                   }],
                   "Subject": "GitHub Actions Workflow Status: Failure",
-                  "TextPart": "The GitHub Actions workflow has encountered an issue.\n\nUnfortunately, the tests or the Docker build/push process failed. Please review the logs below for detailed error messages and context.\n\nWorkflow Summary:\n- Tests: Failed or Skipped\n- Docker Build: Failed\n- Repository: ${{ github.repository }}\n- Commit: ${{ github.sha }}\n\nFor more information, please visit the GitHub Actions logs or contact the team."
+                  "TextPart": "The GitHub Actions workflow has encountered an issue.\n\nDetails:\n- Repository: ${{ github.repository }}\n- Commit: ${{ github.sha }}\n- Tests: Failed or Skipped\n- Linting: Failed\n- Formatting: Failed\n- Security: Failed\n- Docker Build: Failed\n\nFor more information, please review the GitHub Actions logs or contact the team."
                 }]
               }'
