@@ -16,11 +16,12 @@ def prepare_data(data_path="Churn_Modelling.csv"):
     y = data["Exited"]
 
     x_train, x_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=1)
+        X, y, test_size=0.2, random_state=1
+    )
 
     scaler = StandardScaler()
     x_train_scaled = scaler.fit_transform(x_train)
     x_test_scaled = scaler.transform(x_test)
 
-    joblib.dump(scaler, "scaler.joblib")  # Save the scaler for later use
+    joblib.dump(scaler, "scaler.joblib")
     return x_train_scaled, x_test_scaled, y_train, y_test

@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from model_pipeline.data_processing import (prepare_data)
+from model_pipeline.data_processing import prepare_data
 
 
 def test_prepare_data():

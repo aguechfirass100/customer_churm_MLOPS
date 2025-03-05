@@ -45,10 +45,13 @@ async def retrain(request: RetrainRequest):
         mlflow.end_run()
     try:
         x_train, x_test, y_train, y_test = prepare_data()
-        model = train_model(x_train, y_train,
-                            n_estimators=request.n_estimators,
-                            max_depth=request.max_depth,
-                            min_samples_split=request.min_samples_split)
+        model = train_model(
+            x_train,
+            y_train,
+            n_estimators=request.n_estimators,
+            max_depth=request.max_depth,
+            min_samples_split=request.min_samples_split,
+        )
         accuracy, precision, recall, f1 = evaluate_model(model, x_test, y_test)
         save_model(model)
         return {
@@ -56,9 +59,8 @@ async def retrain(request: RetrainRequest):
             "accuracy": accuracy,
             "precision": precision,
             "recall": recall,
-            "f1": f1
+            "f1": f1,
         }
     except Exception as e:
         print(f"Retraining failed: {e}")
-        raise HTTPException(
-            status_code=400, detail=f"Retraining failed: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Retraining failed: {str(e)}")

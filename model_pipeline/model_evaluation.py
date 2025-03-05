@@ -16,6 +16,5 @@ def evaluate_model(model, x_test, y_test):
     mlflow.log_metric("recall", recall)
     mlflow.log_metric("f1", f1)
 
-    print(
-        f"Accuracy: {accuracy}, Precision: {precision}, Recall: {recall}, F1: {f1}")
+    print(f"Accuracy: {accuracy}, Precision: {precision}, Recall: {recall}, F1: {f1}")
     return accuracy, precision, recall, f1

@@ -17,8 +17,21 @@ def test_train_model():
     assert model is not None
     assert hasattr(model, "predict")
 
-    test_input = np.array([[-0.23082038, 0.91509065, -0.94449979, -0.70174202,
-                            0.58817274, 0.80225696, -1.55337352, 0.97725852, 0.42739449]])
+    test_input = np.array(
+        [
+            [
+                -0.23082038,
+                0.91509065,
+                -0.94449979,
+                -0.70174202,
+                0.58817274,
+                0.80225696,
+                -1.55337352,
+                0.97725852,
+                0.42739449,
+            ]
+        ]
+    )
 
     preds = model.predict(test_input)
 

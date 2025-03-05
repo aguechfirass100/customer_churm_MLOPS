@@ -11,7 +11,6 @@ import os
 
 # mlflow.set_experiment(experiment_name)
 
-# Set the tracking URI explicitly
 mlflow.set_tracking_uri("http://127.0.0.1:5000")
 
 experiment_name = "Churn_Model_Experiment_XGBoostV2"
@@ -25,7 +24,14 @@ print(f"Tracking URI: {mlflow.get_tracking_uri()}")
 print(f"Experiment '{experiment_name}' is set up.")
 
 
-def train_model(x_train, y_train, n_estimators=100, max_depth=3, learning_rate=0.1, min_samples_split=2):
+def train_model(
+    x_train,
+    y_train,
+    n_estimators=100,
+    max_depth=3,
+    learning_rate=0.1,
+    min_samples_split=2,
+):
     """Trains the XGBoost model and logs parameters with MLflow."""
     with mlflow.start_run():
         mlflow.log_param("n_estimators", n_estimators)
@@ -38,8 +44,8 @@ def train_model(x_train, y_train, n_estimators=100, max_depth=3, learning_rate=0
             learning_rate=learning_rate,
             random_state=1,
             use_label_encoder=False,
-            eval_metric='logloss',
-            min_samples_split=min_samples_split
+            eval_metric="logloss",
+            min_samples_split=min_samples_split,
         )
         model.fit(x_train, y_train)
         print("X_train shape", x_train.shape)
@@ -50,13 +56,11 @@ def train_model(x_train, y_train, n_estimators=100, max_depth=3, learning_rate=0
 
 
 def save_model(model, model_path="xgboost_model.joblib"):
-    """Saves the trained model."""
     joblib.dump(model, model_path)
     print(f"Model saved to {model_path}")
 
 
 def load_model(model_path="xgboost_model.joblib"):
-    """Loads a saved model."""
     model = joblib.load(model_path)
     print(f"Model loaded from {model_path}")
     return model

@@ -12,7 +12,7 @@ install: $(VENV_NAME)/bin/activate
 	$(PIP) install -r $(REQUIREMENTS)
 
 $(VENV_NAME)/bin/activate:
-	python -m venv $(VENV_NAME)
+	python -m venv $(VENV_NAME)	
 	$(PIP) install --upgrade pip
 	touch $(VENV_NAME)/bin/activate
 

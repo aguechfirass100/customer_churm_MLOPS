@@ -31,6 +31,7 @@ async def test_connection():
     except Exception as e:
         print(f"MongoDB connection failed: {e}")
 
+
 # asyncio.run(test_connection())
 
 print("Loading the XGBoost model...")
@@ -88,7 +89,10 @@ async def predict(request: PredictionRequest):
         result = await predictions_collection.insert_one(prediction_data)
         print(f"Insertion result: {result.inserted_id}")
 
-        return {"prediction": int(prediction[0]), "prediction_id": str(result.inserted_id)}
+        return {
+            "prediction": int(prediction[0]),
+            "prediction_id": str(result.inserted_id),
+        }
     except Exception as e:
         print(f"Prediction failed: {e}")
         raise HTTPException(status_code=400, detail="Prediction failed")
@@ -98,7 +102,8 @@ async def predict(request: PredictionRequest):
 async def retrain(request: RetrainRequest):
     print("Retrain endpoint called.")
     print(
-        f"Retrain request parameters: n_estimators={request.n_estimators}, max_depth={request.max_depth}, min_samples_split={request.min_samples_split}")
+        f"Retrain request parameters: n_estimators={request.n_estimators}, max_depth={request.max_depth}, min_samples_split={request.min_samples_split}"
+    )
 
     if mlflow.active_run():
         print("Ending existing MLflow run...")
@@ -108,19 +113,24 @@ async def retrain(request: RetrainRequest):
         print("Preparing data for retraining...")
         x_train, x_test, y_train, y_test = prepare_data()
         print(
-            f"Data prepared: x_train={x_train.shape}, x_test={x_test.shape}, y_train={y_train.shape}, y_test={y_test.shape}")
+            f"Data prepared: x_train={x_train.shape}, x_test={x_test.shape}, y_train={y_train.shape}, y_test={y_test.shape}"
+        )
 
         print("Training the model...")
-        model = train_model(x_train, y_train,
-                            n_estimators=request.n_estimators,
-                            max_depth=request.max_depth,
-                            min_samples_split=request.min_samples_split)
+        model = train_model(
+            x_train,
+            y_train,
+            n_estimators=request.n_estimators,
+            max_depth=request.max_depth,
+            min_samples_split=request.min_samples_split,
+        )
         print("Model training completed.")
 
         print("Evaluating the model...")
         accuracy, precision, recall, f1 = evaluate_model(model, x_test, y_test)
         print(
-            f"Evaluation metrics: accuracy={accuracy}, precision={precision}, recall={recall}, f1={f1}")
+            f"Evaluation metrics: accuracy={accuracy}, precision={precision}, recall={recall}, f1={f1}"
+        )
 
         print("Saving the retrained model...")
         save_model(model)
@@ -130,7 +140,7 @@ async def retrain(request: RetrainRequest):
             "accuracy": accuracy,
             "precision": precision,
             "recall": recall,
-            "f1": f1
+            "f1": f1,
         }
         print(f"Retraining metrics to insert: {retraining_metrics}")
 
@@ -138,16 +148,17 @@ async def retrain(request: RetrainRequest):
         result = await predictions_collection.insert_one(retraining_metrics)
         print(f"Insertion result: {result.inserted_id}")
 
-        return {"message": "Model re-trained successfully",
-                "accuracy": accuracy,
-                "precision": precision,
-                "recall": recall,
-                "f1": f1,
-                "retraining_id": str(result.inserted_id)}
+        return {
+            "message": "Model re-trained successfully",
+            "accuracy": accuracy,
+            "precision": precision,
+            "recall": recall,
+            "f1": f1,
+            "retraining_id": str(result.inserted_id),
+        }
     except Exception as e:
         print(f"Retraining failed: {e}")
-        raise HTTPException(
-            status_code=400, detail=f"Retraining failed: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Retraining failed: {str(e)}")
 
 
 @app.get("/health")
