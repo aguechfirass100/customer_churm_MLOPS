@@ -169,6 +169,6 @@ def health_check():
 
 
 @app.get("/healthy")
-def health_check():
+def health_check_again():
     print("Health check endpoint called.")
     return {"status": "healthy"}
