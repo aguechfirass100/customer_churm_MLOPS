@@ -11,3 +11,4 @@ xgboost
 pytest
 pymongo
 motor
+elasticsearch==8.9.0

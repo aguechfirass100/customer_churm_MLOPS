@@ -33,6 +33,20 @@ jobs:
         run: |
           docker-compose up --build -d
 
+      - name: Wait for Elasticsearch to be ready
+        run: |
+          until docker-compose exec -T elasticsearch curl -f http://localhost:9200; do
+            echo "Waiting for Elasticsearch to be ready..."
+            sleep 5
+          done
+
+      - name: Wait for Kibana to be ready
+        run: |
+          until docker-compose exec -T kibana curl -f http://localhost:5601; do
+            echo "Waiting for Kibana to be ready..."
+            sleep 5
+          done
+
       - name: Check FastAPI logs
         run: |
           docker-compose logs fastapi

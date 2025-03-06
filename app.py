@@ -1,3 +1,5 @@
+import datetime
+from elasticsearch import Elasticsearch
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -12,6 +14,8 @@ import time
 
 MONGO_URI = "mongodb+srv://aguechfirass100:RBfGTcdnZ3Q8JASy@tccpm.xmctk.mongodb.net/?retryWrites=true&w=majority&appName=TCCPM"
 MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI", "http://mlflow:5000")
+es = Elasticsearch("http://elasticsearch:9200")
+
 
 print("Attempting to connect to MongoDB...")
 client = AsyncIOMotorClient(MONGO_URI)
@@ -167,6 +171,20 @@ async def retrain(request: RetrainRequest):
             result = await predictions_collection.insert_one(retraining_metrics)
             print(f"Insertion result: {result.inserted_id}")
 
+            log_entry = {
+                "timestamp": datetime.now().isoformat(),
+                "model": "xgboost",
+                "parameters": {
+                    "n_estimators": request.n_estimators,
+                    "max_depth": request.max_depth
+                },
+                "metrics": {
+                    "accuracy": accuracy,
+                    "f1": f1
+                },
+                "dataset_version": "1.0.0"
+            }
+
             return {
                 "message": "Model re-trained successfully",
                 "accuracy": accuracy,
@@ -175,6 +193,8 @@ async def retrain(request: RetrainRequest):
                 "f1": f1,
                 "retraining_id": str(result.inserted_id),
             }
+
+        es.index(index="model-logs", document=log_entry)
     except Exception as e:
         print(f"Retraining failed: {e}")
         raise HTTPException(
