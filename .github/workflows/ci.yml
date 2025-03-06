@@ -46,7 +46,7 @@ jobs:
 
       - name: Wait for MongoDB to be ready
         run: |
-          until docker-compose exec -T mongodb mongo --eval 'db.runCommand("ping").ok'; do
+          until docker-compose exec -T mongodb mongosh --eval 'db.runCommand("ping").ok'; do
             echo "Waiting for MongoDB to be ready..."
             sleep 5
           done
