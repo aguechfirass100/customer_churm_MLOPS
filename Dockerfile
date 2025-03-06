@@ -1,5 +1,8 @@
 FROM python:3.11-slim
 
+# Install curl
+RUN apt-get update && apt-get install -y curl
+
 ENV PIP_DEFAULT_TIMEOUT=100 \
     PIP_NO_CACHE_DIR=0 \
     PIP_CACHE_DIR=/root/.cache/pip
