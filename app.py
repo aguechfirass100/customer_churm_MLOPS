@@ -1,5 +1,3 @@
-# from dotenv import load_dotenv
-import asyncio
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -9,38 +7,16 @@ import numpy as np
 import os
 from motor.motor_asyncio import AsyncIOMotorClient
 from model_pipeline import evaluate_model, prepare_data, save_model, train_model
-
-# load_dotenv()
-
-# MONGO_URI = os.getenv("MONGO_URI")
+from mlflow.exceptions import MlflowException
+import time
 
 MONGO_URI = "mongodb+srv://aguechfirass100:RBfGTcdnZ3Q8JASy@tccpm.xmctk.mongodb.net/?retryWrites=true&w=majority&appName=TCCPM"
+MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI", "http://mlflow:5000")
 
 print("Attempting to connect to MongoDB...")
 client = AsyncIOMotorClient(MONGO_URI)
-
 db = client["TCCPM"]
 predictions_collection = db.predictions
-
-
-async def test_connection():
-    try:
-        print("Testing MongoDB connection...")
-        await client.server_info()
-        print("MongoDB connection successful!")
-    except Exception as e:
-        print(f"MongoDB connection failed: {e}")
-
-
-# asyncio.run(test_connection())
-
-print("Loading the XGBoost model...")
-try:
-    model = joblib.load("xgboost_model.joblib")
-    print("Model loaded successfully!")
-except Exception as e:
-    print(f"Failed to load model: {e}")
-    raise
 
 app = FastAPI()
 
@@ -61,6 +37,35 @@ class RetrainRequest(BaseModel):
     n_estimators: int
     max_depth: int
     min_samples_split: int
+
+
+@app.on_event("startup")
+async def startup_event():
+    print("Testing MongoDB connection...")
+    try:
+        await client.server_info()
+        print("MongoDB connection successful!")
+    except Exception as e:
+        print(f"MongoDB connection failed: {e}")
+        raise
+
+    print("Loading the XGBoost model...")
+    try:
+        global model
+        model = joblib.load("xgboost_model.joblib")
+        print("Model loaded successfully!")
+    except Exception as e:
+        print(f"Failed to load model: {e}")
+        raise
+
+    print("Initializing MLflow...")
+    mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
+    try:
+        mlflow.get_experiment_by_name("test")  # Test connection
+        print("MLflow initialized successfully!")
+    except MlflowException as e:
+        print(f"Failed to initialize MLflow: {e}")
+        raise
 
 
 @app.get("/")
@@ -95,7 +100,7 @@ async def predict(request: PredictionRequest):
         }
     except Exception as e:
         print(f"Prediction failed: {e}")
-        raise HTTPException(status_code=400, detail="Prediction failed")
+        raise HTTPException(status_code=400, detail=f"Prediction failed: {str(e)}")
 
 
 @app.post("/retrain")
@@ -117,45 +122,59 @@ async def retrain(request: RetrainRequest):
         )
 
         print("Training the model...")
-        model = train_model(
-            x_train,
-            y_train,
-            n_estimators=request.n_estimators,
-            max_depth=request.max_depth,
-            min_samples_split=request.min_samples_split,
-        )
-        print("Model training completed.")
+        with mlflow.start_run():
+            mlflow.log_params({
+                "n_estimators": request.n_estimators,
+                "max_depth": request.max_depth,
+                "min_samples_split": request.min_samples_split,
+            })
 
-        print("Evaluating the model...")
-        accuracy, precision, recall, f1 = evaluate_model(model, x_test, y_test)
-        print(
-            f"Evaluation metrics: accuracy={accuracy}, precision={precision}, recall={recall}, f1={f1}"
-        )
+            model = train_model(
+                x_train,
+                y_train,
+                n_estimators=request.n_estimators,
+                max_depth=request.max_depth,
+                min_samples_split=request.min_samples_split,
+            )
+            print("Model training completed.")
 
-        print("Saving the retrained model...")
-        save_model(model)
-        print("Model saved successfully.")
+            print("Evaluating the model...")
+            accuracy, precision, recall, f1 = evaluate_model(model, x_test, y_test)
+            print(
+                f"Evaluation metrics: accuracy={accuracy}, precision={precision}, recall={recall}, f1={f1}"
+            )
 
-        retraining_metrics = {
-            "accuracy": accuracy,
-            "precision": precision,
-            "recall": recall,
-            "f1": f1,
-        }
-        print(f"Retraining metrics to insert: {retraining_metrics}")
+            mlflow.log_metrics({
+                "accuracy": accuracy,
+                "precision": precision,
+                "recall": recall,
+                "f1": f1,
+            })
 
-        print("Inserting retraining metrics into MongoDB...")
-        result = await predictions_collection.insert_one(retraining_metrics)
-        print(f"Insertion result: {result.inserted_id}")
+            print("Saving the retrained model...")
+            save_model(model)
+            print("Model saved successfully.")
 
-        return {
-            "message": "Model re-trained successfully",
-            "accuracy": accuracy,
-            "precision": precision,
-            "recall": recall,
-            "f1": f1,
-            "retraining_id": str(result.inserted_id),
-        }
+            retraining_metrics = {
+                "accuracy": accuracy,
+                "precision": precision,
+                "recall": recall,
+                "f1": f1,
+            }
+            print(f"Retraining metrics to insert: {retraining_metrics}")
+
+            print("Inserting retraining metrics into MongoDB...")
+            result = await predictions_collection.insert_one(retraining_metrics)
+            print(f"Insertion result: {result.inserted_id}")
+
+            return {
+                "message": "Model re-trained successfully",
+                "accuracy": accuracy,
+                "precision": precision,
+                "recall": recall,
+                "f1": f1,
+                "retraining_id": str(result.inserted_id),
+            }
     except Exception as e:
         print(f"Retraining failed: {e}")
         raise HTTPException(
@@ -164,11 +183,5 @@ async def retrain(request: RetrainRequest):
 
 @app.get("/health")
 def health_check():
-    print("Health check endpoint called.")
-    return {"status": "healthy"}
-
-
-@app.get("/healthy")
-def health_check_again():
     print("Health check endpoint called.")
     return {"status": "healthy"}
